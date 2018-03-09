@@ -4,11 +4,9 @@ const app = express();
 const bodyParser = require('body-parser');
 const nunjucks = require('nunjucks');
 const path = require('path');
+const models = require('./db/models')
 
 const env = nunjucks.configure('views', {noCache: true});
-const server = app.listen(3000, () => {
-    console.log('server listening on port 3000')
-})
 
 
 app.use(morgan('combined'));
@@ -21,3 +19,16 @@ app.use(express.static(path.join(__dirname, '/public')));
 
 app.set('view engine', 'html');
 app.engine('html', nunjucks.render);
+
+models.User.sync()
+.then(function () {
+    console.log('User table created!');
+    return models.Page.sync();
+})
+.then(function () {
+    console.log('Page table created!');
+    app.listen(3000, function () {
+        console.log('Server is listening on port 3000!');
+    });
+})
+.catch(console.error.bind(console));
