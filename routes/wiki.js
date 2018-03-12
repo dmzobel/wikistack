@@ -9,14 +9,26 @@ router.get('/', function(req, res) {
     res.redirect('/');
 });
 
+// router.post('/', function (req, res, next) {
+//   const page = Page.build({
+//     title: req.body.title,
+//     content: req.body.content,
+//   });
+//   page.save()
+//   .then(() => res.redirect(page.urlTitle))
+// });
+
+
 router.post('/', function (req, res, next) {
-  const page = Page.build({
-    title: req.body.title,
-    content: req.body.content,
-  });
-  page.save()
-  .then(res.redirect(page.urlTitle))
-});
+    
+    User.findOrCreate({where: {name: req.body.name, email: req.body.email}})
+    .then((user) => Page.create({
+        title: req.body.title,
+        content: req.body.content,
+        authorId: user[0].id
+    }))
+    .then((page) => res.redirect(page.urlTitle))
+})
 
 router.get('/add', function(req, res) {
     res.render("addpage");
