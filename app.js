@@ -5,28 +5,34 @@ const bodyParser = require('body-parser');
 const nunjucks = require('nunjucks');
 const path = require('path');
 const models = require('./db/models')
+const routes = require('./routes')
 
 const env = nunjucks.configure('views', {noCache: true});
 
+app.get('/', (req, res) => {
+    models.Page.findAll()
+    .then(pages => {
+        res.render('index', {pages})
+    })
+});
 
 app.use(morgan('combined'));
 
-app.get('/', (req, res, next) => {
-    res.send('hello world');
-})
+app.use(bodyParser.urlencoded({ extended: true}));
+app.use(bodyParser.json());
 
+app.use('/', routes)
 app.use(express.static(path.join(__dirname, '/public')));
 
 app.set('view engine', 'html');
 app.engine('html', nunjucks.render);
 
-models.User.sync()
+// wipe database when change models.
+// models.db.sync({force: true})
+
+models.db.sync()
 .then(function () {
-    console.log('User table created!');
-    return models.Page.sync();
-})
-.then(function () {
-    console.log('Page table created!');
+    console.log('All tables created!');
     app.listen(3000, function () {
         console.log('Server is listening on port 3000!');
     });
